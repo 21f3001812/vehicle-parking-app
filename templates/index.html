@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-primary text-white p-5 rounded mb-5">
+            <h1 class="display-4">Welcome to Vehicle Parking App</h1>
+            <p class="lead">Efficient parking management system for 4-wheelers. Find and book parking spots easily.</p>
+            {% if not session.user_id %}
+                <a class="btn btn-light btn-lg" href="{{ url_for('register') }}" role="button">Get Started</a>
+            {% else %}
+                {% if session.username == 'admin' %}
+                    <a class="btn btn-light btn-lg" href="{{ url_for('admin_dashboard') }}" role="button">Go to Dashboard</a>
+                {% else %}
+                    <a class="btn btn-light btn-lg" href="{{ url_for('user_dashboard') }}" role="button">Go to Dashboard</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-car fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Easy Booking</h5>
+                <p class="card-text">Book your parking spot with just a few clicks. No hassle, no waiting.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Multiple Locations</h5>
+                <p class="card-text">Find parking spots in various prime locations across the city.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Secure & Safe</h5>
+                <p class="card-text">Your vehicle is safe with our secure parking management system.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">For Users</h5>
+                <p class="card-text">Register and book parking spots in your preferred locations. Track your parking history and manage your reservations.</p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Easy registration process</li>
+                    <li><i class="fas fa-check text-success"></i> Real-time spot availability</li>
+                    <li><i class="fas fa-check text-success"></i> Automatic cost calculation</li>
+                    <li><i class="fas fa-check text-success"></i> Parking history tracking</li>
+                </ul>
+                {% if not session.user_id %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Register Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">For Administrators</h5>
+                <p class="card-text">Manage parking lots, monitor occupancy, and oversee the entire parking system efficiently.</p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Create and manage parking lots</li>
+                    <li><i class="fas fa-check text-success"></i> Monitor spot occupancy</li>
+                    <li><i class="fas fa-check text-success"></i> User management</li>
+                    <li><i class="fas fa-check text-success"></i> Analytics and reporting</li>
+                </ul>
+                {% if not session.user_id %}
+                    <a href="{{ url_for('login') }}" class="btn btn-success">Admin Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h5 class="card-title">How It Works</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <i class="fas fa-user-plus fa-2x text-primary mb-2"></i>
+                        <h6>1. Register</h6>
+                        <p class="small">Create your account</p>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-search fa-2x text-primary mb-2"></i>
+                        <h6>2. Find</h6>
+                        <p class="small">Search for available spots</p>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-bookmark fa-2x text-primary mb-2"></i>
+                        <h6>3. Book</h6>
+                        <p class="small">Reserve your parking spot</p>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-car fa-2x text-primary mb-2"></i>
+                        <h6>4. Park</h6>
+                        <p class="small">Park your vehicle safely</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

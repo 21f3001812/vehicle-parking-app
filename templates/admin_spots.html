@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Parking Spots - Vehicle Parking App
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Parking Spots Management</h2>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" action="{{ url_for('admin_spots') }}">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search by location name or spot ID..." value="{{ search_query or '' }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    {% if search_query %}
+                    <a href="{{ url_for('admin_spots') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <span class="badge bg-info fs-6">{{ spots|length }} spot{% if spots|length != 1 %}s{% endif %} found</span>
+        </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="btn-group" role="group" aria-label="Status filter">
+                <input type="radio" class="btn-check" name="statusFilter" id="allStatus" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="allStatus" onclick="filterByStatus('all')">All Spots</label>
+
+                <input type="radio" class="btn-check" name="statusFilter" id="availableStatus" autocomplete="off">
+                <label class="btn btn-outline-success" for="availableStatus" onclick="filterByStatus('A')">Available Only</label>
+
+                <input type="radio" class="btn-check" name="statusFilter" id="occupiedStatus" autocomplete="off">
+                <label class="btn btn-outline-danger" for="occupiedStatus" onclick="filterByStatus('O')">Occupied Only</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spots Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="spotsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Spot ID</th>
+                            <th>Lot Name</th>
+                            <th>Lot Address</th>
+                            <th>Price per Hour</th>
+                            <th>Status</th>
+                            <th>Current User</th>
+                            <th>Vehicle Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for spot, lot in spots %}
+                        <tr data-status="{{ spot.status }}">
+                            <td>{{ spot.id }}</td>
+                            <td>{{ lot.prime_location_name }}</td>
+                            <td>{{ lot.address }}</td>
+                            <td>₹{{ lot.price }}/hr</td>
+                            <td>
+                                {% if spot.status == 'O' %}
+                                    <span class="badge bg-danger">Occupied</span>
+                                {% else %}
+                                    <span class="badge bg-success">Available</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if spot.status == 'O' %}
+                                    {% set active_reservation = spot.reservations|selectattr('is_active', 'equalto', true)|first %}
+                                    {% if active_reservation %}
+                                        {{ active_reservation.user.username }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if spot.status == 'O' %}
+                                    {% set active_reservation = spot.reservations|selectattr('is_active', 'equalto', true)|first %}
+                                    {% if active_reservation %}
+                                        {{ active_reservation.vehicle_number }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                {% if search_query %}
+                                    No spots found matching "{{ search_query }}".
+                                {% else %}
+                                    No parking spots available.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Total Spots</h6>
+                    <p class="card-text display-6">{{ spots|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Available Spots</h6>
+                    <p class="card-text display-6 text-success">
+                        {{ spots|selectattr('0.status', 'equalto', 'A')|list|length }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Occupied Spots</h6>
+                    <p class="card-text display-6 text-danger">
+                        {{ spots|selectattr('0.status', 'equalto', 'O')|list|length }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterByStatus(status) {
+    const table = document.getElementById('spotsTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

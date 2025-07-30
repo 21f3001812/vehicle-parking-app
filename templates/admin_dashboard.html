@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Admin Dashboard - Vehicle Parking App
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2 mb-3">
+            <div class="card dashboard-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Total Spots</h6>
+                    <p class="card-text display-6">{{ total_spots }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="card dashboard-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Occupied</h6>
+                    <p class="card-text display-6">{{ occupied_spots }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="card dashboard-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Available</h6>
+                    <p class="card-text display-6">{{ available_spots }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="card dashboard-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Total Users</h6>
+                    <p class="card-text display-6">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="card dashboard-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">All Reservations</h6>
+                    <p class="card-text display-6">{{ total_reservations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="card dashboard-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Active Now</h6>
+                    <p class="card-text display-6">{{ active_reservations }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Parking Occupancy</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="occupancyChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Monthly Reservations</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('admin_parking_lots') }}" class="btn btn-primary w-100 py-3">
+                <i class="fas fa-building mb-2 d-block" style="font-size: 2rem;"></i>
+                Manage Parking Lots
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('admin_users') }}" class="btn btn-success w-100 py-3">
+                <i class="fas fa-users mb-2 d-block" style="font-size: 2rem;"></i>
+                Manage Users
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('admin_spots') }}" class="btn btn-info w-100 py-3">
+                <i class="fas fa-car mb-2 d-block" style="font-size: 2rem;"></i>
+                View Spots
+            </a>
+        </div>
+        <div class="col-md-3 mb-3">
+            <a href="{{ url_for('admin_reservations') }}" class="btn btn-warning w-100 py-3">
+                <i class="fas fa-clipboard-list mb-2 d-block" style="font-size: 2rem;"></i>
+                All Reservations
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Occupancy Pie Chart
+const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+new Chart(occupancyCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Occupied', 'Available'],
+        datasets: [{
+            data: [{{ occupied_spots }}, {{ available_spots }}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(75, 192, 192, 0.8)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Current Parking Occupancy'
+            },
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Monthly Reservations Chart
+fetch('/api/stats')
+    .then(response => response.json())
+    .then(data => {
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: data.monthly_reservations ? data.monthly_reservations.map(item => item.month) : [],
+                datasets: [{
+                    label: 'Reservations',
+                    data: data.monthly_reservations ? data.monthly_reservations.map(item => item.count) : [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Reservations'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Reservations Trend'
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    })
+    .catch(error => console.error('Error loading chart data:', error));
+</script>
+{% endblock %}

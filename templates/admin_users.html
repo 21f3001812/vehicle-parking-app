@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Users - Vehicle Parking App
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Registered Users</h2>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" action="{{ url_for('admin_users') }}">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Search users by name, username, or email..." value="{{ search_query or '' }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    {% if search_query %}
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <span class="badge bg-info fs-6">{{ users|length }} user{% if users|length != 1 %}s{% endif %} found</span>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Active Reservations</th>
+                            <th>Total Reservations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.full_name or 'N/A' }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone or 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-{% if user_stats[user.id].active_reservations > 0 %}success{% else %}secondary{% endif %}">
+                                    {{ user_stats[user.id].active_reservations }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ user_stats[user.id].total_reservations }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                {% if search_query %}
+                                    No users found matching "{{ search_query }}".
+                                {% else %}
+                                    No users registered.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    {% if users %}
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Total Active Users</h6>
+                    <p class="card-text display-6">
+                        {{ users|selectattr('id', 'in', user_stats.keys())|selectattr('id', 'in', user_stats.keys())|list|length }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Users with Active Parking</h6>
+                    <p class="card-text display-6">
+                        {% set active_count = 0 %}
+                        {% for user in users %}
+                            {% if user_stats[user.id].active_reservations > 0 %}
+                                {% set active_count = active_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ active_count }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card text-center">
+                <div class="card-body">
+                    <h6 class="card-title">Total User Reservations</h6>
+                    <p class="card-text display-6">
+                        {% set total_reservations = 0 %}
+                        {% for user in users %}
+                            {% set total_reservations = total_reservations + user_stats[user.id].total_reservations %}
+                        {% endfor %}
+                        {{ total_reservations }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
